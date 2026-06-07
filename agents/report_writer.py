@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 
 
 def build_case_report(case: dict) -> str:
@@ -6,23 +7,27 @@ def build_case_report(case: dict) -> str:
     reasons = case.get("reasons", [])
     source_finding = case.get("source_finding", {})
 
+    source_finding_text = json.dumps(
+        source_finding,
+        indent=2,
+        ensure_ascii=False,
+    )
+
     report = f"""# Fraud Case Report
 
 ## Case Overview
 
-Case ID: {case.get("case_id", "N/A")}
-Generated At: {datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")}
-Risk Score: {case.get("risk_score", "N/A")}
-Risk Tier: {case.get("risk_tier", "N/A")}
-Priority: {case.get("priority", "N/A")}
-Recommended Action: {case.get("recommended_action", "N/A")}
+- **Case ID:** {case.get("case_id", "N/A")}
+- **Generated At:** {datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")}
+- **Risk Score:** {case.get("risk_score", "N/A")}
+- **Risk Tier:** {case.get("risk_tier", "N/A")}
+- **Priority:** {case.get("priority", "N/A")}
+- **Recommended Action:** {case.get("recommended_action", "N/A")}
 
 ## Suspicious Pattern
 
-Pattern Type: {case.get("pattern", "N/A")}
-
-Evidence:
-{case.get("evidence", "No evidence provided.")}
+- **Pattern Type:** {case.get("pattern", "N/A")}
+- **Evidence:** {case.get("evidence", "No evidence provided.")}
 
 ## Accounts Involved
 
@@ -46,7 +51,7 @@ Evidence:
 
 ## Source Finding
 
-{source_finding}
+{source_finding_text}
 
 ## Recommended Analyst Next Step
 
