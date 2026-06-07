@@ -5,6 +5,7 @@ from agents.pattern_finder import run_pattern_finder
 from agents.risk_ranker import run_risk_ranker
 from agents.action_recommender import run_action_recommender
 from agents.report_writer import run_report_writer
+from agents.memory import make_trace_event, save_trace
 
 
 st.set_page_config(
@@ -34,8 +35,22 @@ uploaded_file = st.file_uploader(
 
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
+    trace_events = []
 
     result = run_pattern_finder(df)
+
+    trace_events.append(
+        make_trace_event(
+            agent_name="Pattern Finder",
+            action="Detect suspicious transaction patterns",
+            input_summary=f"Received {len(df)} transactions.",
+            output_summary=f"Found {result.get('num_findings', 0)} suspicious patterns.",
+            metadata={
+                "status": result.get("status"),
+                "inferred_columns": result.get("columns"),
+            },
+        )
+    )
 
     suspicious_cases_count = 0
     high_risk_cases_count = 0
@@ -43,13 +58,69 @@ if uploaded_file is not None:
 
     if result["status"] == "success":
         ranked_result = run_risk_ranker(result["findings"])
-        action_result = run_action_recommender(ranked_result["cases"])
-        report_result = run_report_writer(action_result["recommendations"])
 
-        suspicious_cases_count = ranked_result["num_cases"]
         high_risk_cases_count = sum(
             1 for case in ranked_result["cases"] if case["risk_tier"] == "High"
         )
+
+        trace_events.append(
+            make_trace_event(
+                agent_name="Risk Ranker",
+                action="Score and rank suspicious cases",
+                input_summary=f"Received {len(result['findings'])} suspicious findings.",
+                output_summary=(
+                    f"Ranked {ranked_result['num_cases']} cases; "
+                    f"{high_risk_cases_count} high-risk cases found."
+                ),
+                metadata={
+                    "num_cases": ranked_result["num_cases"],
+                    "high_risk_cases": high_risk_cases_count,
+                },
+            )
+        )
+
+        action_result = run_action_recommender(ranked_result["cases"])
+
+        action_counts = {}
+        for case in action_result["recommendations"]:
+            action = case["recommended_action"]
+            action_counts[action] = action_counts.get(action, 0) + 1
+
+        trace_events.append(
+            make_trace_event(
+                agent_name="Action Recommender",
+                action="Recommend analyst next actions",
+                input_summary=f"Received {ranked_result['num_cases']} ranked cases.",
+                output_summary=(
+                    f"Generated {action_result['num_recommendations']} recommendations."
+                ),
+                metadata={
+                    "action_counts": action_counts,
+                },
+            )
+        )
+
+        report_result = run_report_writer(action_result["recommendations"])
+
+        trace_events.append(
+            make_trace_event(
+                agent_name="Analyst Report Writer",
+                action="Generate downloadable case reports",
+                input_summary=(
+                    f"Received {action_result['num_recommendations']} recommended actions."
+                ),
+                output_summary=(
+                    f"Generated {report_result['num_reports']} analyst-ready reports."
+                ),
+                metadata={
+                    "num_reports": report_result["num_reports"],
+                },
+            )
+        )
+
+        save_trace(trace_events)
+
+        suspicious_cases_count = ranked_result["num_cases"]
 
         sender_col = result["columns"].get("sender")
         receiver_col = result["columns"].get("receiver")
@@ -61,6 +132,7 @@ if uploaded_file is not None:
         ranked_result = None
         action_result = None
         report_result = None
+        save_trace(trace_events)
 
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Transactions", len(df))
@@ -71,7 +143,7 @@ if uploaded_file is not None:
     st.success("Dataset loaded successfully.")
 
     st.subheader("Preview")
-    st.dataframe(df.head(20), use_container_width=True)
+    st.dataframe(df.head(20).astype(str), use_container_width=True)
 
     st.subheader("Dataset Summary")
     st.write(df.describe(include="all"))
@@ -88,7 +160,7 @@ if uploaded_file is not None:
 
         if result["findings"]:
             findings_df = pd.DataFrame(result["findings"])
-            st.dataframe(findings_df, use_container_width=True)
+            st.dataframe(findings_df.astype(str), use_container_width=True)
 
             st.subheader("Agent 2: Risk Ranker")
 
@@ -109,7 +181,7 @@ if uploaded_file is not None:
                 for case in ranked_result["cases"]
             ])
 
-            st.dataframe(cases_df, use_container_width=True)
+            st.dataframe(cases_df.astype(str), use_container_width=True)
 
             st.subheader("Agent 3: Action Recommender")
 
@@ -131,7 +203,7 @@ if uploaded_file is not None:
                 for case in action_result["recommendations"]
             ])
 
-            st.dataframe(recommendations_df, use_container_width=True)
+            st.dataframe(recommendations_df.astype(str), use_container_width=True)
 
             st.subheader("Agent 4: Analyst Report Writer")
 
@@ -159,6 +231,23 @@ if uploaded_file is not None:
                 file_name=selected_report["report_filename"],
                 mime="text/markdown",
             )
+
+            st.subheader("Agent Trace / Shared Memory")
+
+            st.caption(
+                "This local trace simulates the shared memory layer that can later be backed by Cognee."
+            )
+
+            trace_df = pd.DataFrame(trace_events)
+
+            st.dataframe(
+                trace_df[["timestamp", "agent_name", "action", "input_summary", "output_summary"]],
+                use_container_width=True,
+            )
+
+            with st.expander("View raw memory JSON"):
+                st.json(trace_events)
+
         else:
             st.info("No suspicious patterns found with the current rules.")
     else:
