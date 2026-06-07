@@ -1,0 +1,59 @@
+import streamlit as st
+import pandas as pd
+
+st.set_page_config(
+    page_title="Fraud Ring Triage Copilot",
+    page_icon="🕵️",
+    layout="wide",
+)
+
+st.title("Fraud Ring Triage Copilot")
+st.caption("Track 02 — Fraud Watch")
+
+st.markdown(
+    """
+    A multi-agent dashboard for detecting hidden fraud rings, ranking suspicious
+    cases, recommending analyst actions, and generating downloadable reports.
+    """
+)
+
+st.divider()
+
+col1, col2, col3, col4 = st.columns(4)
+
+col1.metric("Transactions", "—")
+col2.metric("Accounts", "—")
+col3.metric("Suspicious Cases", "—")
+col4.metric("High Risk Cases", "—")
+
+st.subheader("Upload Transaction Dataset")
+
+uploaded_file = st.file_uploader(
+    "Upload a CSV file with transaction data",
+    type=["csv"],
+)
+
+if uploaded_file is not None:
+    df = pd.read_csv(uploaded_file)
+
+    st.success("Dataset loaded successfully.")
+    st.write("Preview:")
+    st.dataframe(df.head(20), use_container_width=True)
+
+    st.subheader("Dataset Summary")
+    st.write(df.describe(include="all"))
+else:
+    st.info("Upload a CSV file to begin analysis.")
+
+st.divider()
+
+st.subheader("Agent Workflow")
+
+st.markdown(
+    """
+    1. **Pattern Finder** — detects circular flows, low-value repeated transfers, and coordinated accounts.
+    2. **Risk Ranker** — scores and prioritizes suspicious cases.
+    3. **Action Recommender** — recommends escalation, review, watchlist, or dismissal.
+    4. **Analyst Report Writer** — generates a downloadable investigation report.
+    """
+)
