@@ -1,8 +1,11 @@
 import streamlit as st
 import pandas as pd
+
 from agents.pattern_finder import run_pattern_finder
 from agents.risk_ranker import run_risk_ranker
 from agents.action_recommender import run_action_recommender
+from agents.report_writer import run_report_writer
+
 
 st.set_page_config(
     page_title="Fraud Ring Triage Copilot",
@@ -22,13 +25,6 @@ st.markdown(
 
 st.divider()
 
-col1, col2, col3, col4 = st.columns(4)
-
-col1.metric("Transactions", "—")
-col2.metric("Accounts", "—")
-col3.metric("Suspicious Cases", "—")
-col4.metric("High Risk Cases", "—")
-
 st.subheader("Upload Transaction Dataset")
 
 uploaded_file = st.file_uploader(
@@ -39,8 +35,42 @@ uploaded_file = st.file_uploader(
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
 
+    result = run_pattern_finder(df)
+
+    suspicious_cases_count = 0
+    high_risk_cases_count = 0
+    accounts_count = 0
+
+    if result["status"] == "success":
+        ranked_result = run_risk_ranker(result["findings"])
+        action_result = run_action_recommender(ranked_result["cases"])
+        report_result = run_report_writer(action_result["recommendations"])
+
+        suspicious_cases_count = ranked_result["num_cases"]
+        high_risk_cases_count = sum(
+            1 for case in ranked_result["cases"] if case["risk_tier"] == "High"
+        )
+
+        sender_col = result["columns"].get("sender")
+        receiver_col = result["columns"].get("receiver")
+
+        if sender_col and receiver_col:
+            accounts = set(df[sender_col].astype(str)) | set(df[receiver_col].astype(str))
+            accounts_count = len(accounts)
+    else:
+        ranked_result = None
+        action_result = None
+        report_result = None
+
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Transactions", len(df))
+    col2.metric("Accounts", accounts_count if accounts_count else "—")
+    col3.metric("Suspicious Cases", suspicious_cases_count)
+    col4.metric("High Risk Cases", high_risk_cases_count)
+
     st.success("Dataset loaded successfully.")
-    st.write("Preview:")
+
+    st.subheader("Preview")
     st.dataframe(df.head(20), use_container_width=True)
 
     st.subheader("Dataset Summary")
@@ -48,10 +78,10 @@ if uploaded_file is not None:
 
     st.subheader("Agent 1: Pattern Finder")
 
-    result = run_pattern_finder(df)
-
     if result["status"] == "success":
-        st.success(f"Pattern Finder completed. Found {result['num_findings']} suspicious patterns.")
+        st.success(
+            f"Pattern Finder completed. Found {result['num_findings']} suspicious patterns."
+        )
 
         st.write("Inferred columns:")
         st.json(result["columns"])
@@ -62,9 +92,9 @@ if uploaded_file is not None:
 
             st.subheader("Agent 2: Risk Ranker")
 
-            ranked_result = run_risk_ranker(result["findings"])
-
-            st.success(f"Risk Ranker completed. Ranked {ranked_result['num_cases']} suspicious cases.")
+            st.success(
+                f"Risk Ranker completed. Ranked {ranked_result['num_cases']} suspicious cases."
+            )
 
             cases_df = pd.DataFrame([
                 {
@@ -72,7 +102,7 @@ if uploaded_file is not None:
                     "risk_score": case["risk_score"],
                     "risk_tier": case["risk_tier"],
                     "pattern": case["pattern"],
-                    "accounts": ", ".join(case["accounts"]),
+                    "accounts": ", ".join(map(str, case["accounts"])),
                     "evidence": case["evidence"],
                     "reasons": " | ".join(case["reasons"]),
                 }
@@ -82,8 +112,6 @@ if uploaded_file is not None:
             st.dataframe(cases_df, use_container_width=True)
 
             st.subheader("Agent 3: Action Recommender")
-
-            action_result = run_action_recommender(ranked_result["cases"])
 
             st.success(
                 f"Action Recommender completed. Generated {action_result['num_recommendations']} recommendations."
@@ -104,13 +132,47 @@ if uploaded_file is not None:
             ])
 
             st.dataframe(recommendations_df, use_container_width=True)
+
+            st.subheader("Agent 4: Analyst Report Writer")
+
+            st.success(
+                f"Report Writer completed. Generated {report_result['num_reports']} downloadable reports."
+            )
+
+            report_options = {
+                f"{report['case_id']} — Risk {report['risk_score']} — {report['recommended_action']}": report
+                for report in report_result["reports"]
+            }
+
+            selected_report_label = st.selectbox(
+                "Select a case report to preview and download",
+                list(report_options.keys()),
+            )
+
+            selected_report = report_options[selected_report_label]
+
+            st.markdown(selected_report["report_markdown"])
+
+            st.download_button(
+                label="Download Analyst Report",
+                data=selected_report["report_markdown"],
+                file_name=selected_report["report_filename"],
+                mime="text/markdown",
+            )
         else:
             st.info("No suspicious patterns found with the current rules.")
     else:
         st.warning(result["message"])
         st.write("Inferred columns:")
         st.json(result["columns"])
+
 else:
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Transactions", "—")
+    col2.metric("Accounts", "—")
+    col3.metric("Suspicious Cases", "—")
+    col4.metric("High Risk Cases", "—")
+
     st.info("Upload a CSV file to begin analysis.")
 
 st.divider()
