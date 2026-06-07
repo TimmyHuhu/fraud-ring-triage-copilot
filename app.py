@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from agents.pattern_finder import run_pattern_finder
 from agents.risk_ranker import run_risk_ranker
+from agents.action_recommender import run_action_recommender
 
 st.set_page_config(
     page_title="Fraud Ring Triage Copilot",
@@ -79,6 +80,30 @@ if uploaded_file is not None:
             ])
 
             st.dataframe(cases_df, use_container_width=True)
+
+            st.subheader("Agent 3: Action Recommender")
+
+            action_result = run_action_recommender(ranked_result["cases"])
+
+            st.success(
+                f"Action Recommender completed. Generated {action_result['num_recommendations']} recommendations."
+            )
+
+            recommendations_df = pd.DataFrame([
+                {
+                    "case_id": case["case_id"],
+                    "risk_score": case["risk_score"],
+                    "risk_tier": case["risk_tier"],
+                    "priority": case["priority"],
+                    "recommended_action": case["recommended_action"],
+                    "pattern": case["pattern"],
+                    "evidence": case["evidence"],
+                    "action_rationale": case["action_rationale"],
+                }
+                for case in action_result["recommendations"]
+            ])
+
+            st.dataframe(recommendations_df, use_container_width=True)
         else:
             st.info("No suspicious patterns found with the current rules.")
     else:
