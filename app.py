@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from agents.pattern_finder import run_pattern_finder
+from agents.risk_ranker import run_risk_ranker
 
 st.set_page_config(
     page_title="Fraud Ring Triage Copilot",
@@ -57,6 +58,27 @@ if uploaded_file is not None:
         if result["findings"]:
             findings_df = pd.DataFrame(result["findings"])
             st.dataframe(findings_df, use_container_width=True)
+
+            st.subheader("Agent 2: Risk Ranker")
+
+            ranked_result = run_risk_ranker(result["findings"])
+
+            st.success(f"Risk Ranker completed. Ranked {ranked_result['num_cases']} suspicious cases.")
+
+            cases_df = pd.DataFrame([
+                {
+                    "case_id": case["case_id"],
+                    "risk_score": case["risk_score"],
+                    "risk_tier": case["risk_tier"],
+                    "pattern": case["pattern"],
+                    "accounts": ", ".join(case["accounts"]),
+                    "evidence": case["evidence"],
+                    "reasons": " | ".join(case["reasons"]),
+                }
+                for case in ranked_result["cases"]
+            ])
+
+            st.dataframe(cases_df, use_container_width=True)
         else:
             st.info("No suspicious patterns found with the current rules.")
     else:
