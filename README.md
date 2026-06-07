@@ -89,7 +89,6 @@ fraud-ring-triage-copilot/
 │   ├── report_writer.py
 │   └── memory.py
 └── reports/
-    └── generated traces and reports, ignored by git
 ~~~
 
 ## Demo Flow
