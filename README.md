@@ -55,19 +55,26 @@ product_brief.pdf
 
 Install dependencies:
 
+~~~bash
 pip install -r requirements.txt
+~~~
 
 Run the app:
 
+~~~bash
 python -m streamlit run app.py
+~~~
 
-Then upload:
+Then upload the sample dataset:
 
+~~~text
 data/sample_transactions.csv
+~~~
 
 ## Project Structure
 
-fraud-watch/
+~~~text
+fraud-ring-triage-copilot/
 ├── app.py
 ├── requirements.txt
 ├── README.md
@@ -75,12 +82,15 @@ fraud-watch/
 ├── data/
 │   └── sample_transactions.csv
 ├── agents/
+│   ├── __init__.py
 │   ├── pattern_finder.py
 │   ├── risk_ranker.py
 │   ├── action_recommender.py
 │   ├── report_writer.py
 │   └── memory.py
 └── reports/
+    └── generated traces and reports, ignored by git
+~~~
 
 ## Demo Flow
 
