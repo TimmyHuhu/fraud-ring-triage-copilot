@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from agents.pattern_finder import run_pattern_finder
 
 st.set_page_config(
     page_title="Fraud Ring Triage Copilot",
@@ -42,6 +43,26 @@ if uploaded_file is not None:
 
     st.subheader("Dataset Summary")
     st.write(df.describe(include="all"))
+
+    st.subheader("Agent 1: Pattern Finder")
+
+    result = run_pattern_finder(df)
+
+    if result["status"] == "success":
+        st.success(f"Pattern Finder completed. Found {result['num_findings']} suspicious patterns.")
+
+        st.write("Inferred columns:")
+        st.json(result["columns"])
+
+        if result["findings"]:
+            findings_df = pd.DataFrame(result["findings"])
+            st.dataframe(findings_df, use_container_width=True)
+        else:
+            st.info("No suspicious patterns found with the current rules.")
+    else:
+        st.warning(result["message"])
+        st.write("Inferred columns:")
+        st.json(result["columns"])
 else:
     st.info("Upload a CSV file to begin analysis.")
 
