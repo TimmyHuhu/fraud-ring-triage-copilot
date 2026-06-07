@@ -3,7 +3,21 @@ def score_finding(finding: dict) -> dict:
     score = 0
     reasons = []
 
-    if pattern == "circular_flow":
+    if pattern == "track02_account_counterparty_ring":
+        score += 85
+        reasons.append("Coordinated account-to-account transfer ring detected.")
+
+        total_amount = finding.get("total_amount", 0)
+        if total_amount >= 100000:
+            score += 10
+            reasons.append(f"Total ring exposure is {total_amount}.")
+
+        num_transactions = finding.get("num_transactions", 0)
+        if num_transactions >= 100:
+            score += 5
+            reasons.append(f"{num_transactions} coordinated transfers detected.")
+
+    elif pattern == "circular_flow":
         score += 70
         reasons.append("Circular fund flow detected.")
 
