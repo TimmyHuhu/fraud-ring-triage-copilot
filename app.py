@@ -226,10 +226,10 @@ if uploaded_file is not None:
             st.markdown(selected_report["report_markdown"])
 
             st.download_button(
-                label="Download Analyst Report",
-                data=selected_report["report_markdown"],
+                label="Download Analyst Report as HTML",
+                data=selected_report["report_html"],
                 file_name=selected_report["report_filename"],
-                mime="text/markdown",
+                mime="text/html",
             )
 
             st.subheader("Agent Trace / Shared Memory")
