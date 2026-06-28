@@ -7,7 +7,7 @@ Track 02 — Fraud Watch
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)
 ![Streamlit](https://img.shields.io/badge/Built%20with-Streamlit-FF4B4B.svg)
 
-Fraud Ring Triage Copilot is a multi-agent investigation dashboard that helps fraud analysts detect hidden fraud rings, rank suspicious cases, recommend next actions, and generate downloadable case reports.
+Fraud Ring Triage Copilot is an open-source, multi-agent workflow that helps fraud analysts triage faster: it detects hidden fraud rings, ranks suspicious cases by risk, recommends next actions, and generates downloadable case reports — reducing the manual overhead of deciding which cases to escalate.
 
 ## Problem
 
