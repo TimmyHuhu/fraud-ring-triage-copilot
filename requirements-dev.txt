@@ -1,0 +1,3 @@
+# Development dependencies (testing, linting).
+# Install with: pip install -r requirements.txt -r requirements-dev.txt
+pytest
