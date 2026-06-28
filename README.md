@@ -2,6 +2,7 @@
 
 Track 02 — Fraud Watch
 
+[![CI](https://github.com/TimmyHuhu/fraud-ring-triage-copilot/actions/workflows/ci.yml/badge.svg)](https://github.com/TimmyHuhu/fraud-ring-triage-copilot/actions/workflows/ci.yml)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)
 ![Streamlit](https://img.shields.io/badge/Built%20with-Streamlit-FF4B4B.svg)
@@ -97,13 +98,30 @@ Then upload the sample dataset:
 data/sample_transactions.csv
 ```
 
+## Development
+
+Install the development dependencies and run the test suite:
+
+```bash
+pip install -r requirements.txt -r requirements-dev.txt
+pytest
+```
+
+The agent logic is covered by unit tests under `tests/`, and
+[GitHub Actions](.github/workflows/ci.yml) runs them on Python 3.10–3.12 for
+every push and pull request. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full
+contribution workflow.
+
 ## Project Structure
 
 ```text
 fraud-ring-triage-copilot/
 ├── app.py
 ├── requirements.txt
+├── requirements-dev.txt
+├── pytest.ini
 ├── README.md
+├── CONTRIBUTING.md
 ├── LICENSE
 ├── .env.example
 ├── product_brief.pdf
@@ -116,6 +134,16 @@ fraud-ring-triage-copilot/
 │   ├── action_recommender.py
 │   ├── report_writer.py
 │   └── memory.py
+├── tests/
+│   ├── test_pattern_finder.py
+│   ├── test_risk_ranker.py
+│   ├── test_action_recommender.py
+│   ├── test_report_writer.py
+│   └── test_memory.py
+├── .github/
+│   ├── workflows/ci.yml
+│   ├── ISSUE_TEMPLATE/
+│   └── PULL_REQUEST_TEMPLATE.md
 └── reports/
 ```
 
