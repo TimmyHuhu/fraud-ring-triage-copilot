@@ -1,11 +1,16 @@
 import streamlit as st
 import pandas as pd
+from dotenv import load_dotenv
 
 from agents.pattern_finder import run_pattern_finder
 from agents.risk_ranker import run_risk_ranker
 from agents.action_recommender import run_action_recommender
 from agents.report_writer import run_report_writer
 from agents.memory import make_trace_event, save_trace
+
+# Load optional configuration (e.g. Cognee keys) from a local .env file.
+# See .env.example. Safe to call when no .env file is present.
+load_dotenv()
 
 
 st.set_page_config(
