@@ -116,7 +116,10 @@ def find_circular_flows(
 ):
     graph = nx.DiGraph()
 
-    for _, row in df.iterrows():
+    working = df.copy()
+    working[amount_col] = pd.to_numeric(working[amount_col], errors="coerce")
+
+    for _, row in working.iterrows():
         sender = str(row[sender_col])
         receiver = str(row[receiver_col])
         amount = float(row[amount_col]) if pd.notna(row[amount_col]) else 0.0
@@ -134,6 +137,12 @@ def find_circular_flows(
                 src = cycle[i]
                 dst = cycle[(i + 1) % len(cycle)]
                 total_amount += graph[src][dst].get("amount", 0.0)
+
+            # simple_cycles returns each cycle at an arbitrary rotation, so the
+            # same loop can come back as [A, B, C] or [B, C, A] across runs.
+            # Rotate to start at the smallest node for a stable representation.
+            start = cycle.index(min(cycle))
+            cycle = cycle[start:] + cycle[:start]
 
             cycles.append(
                 {

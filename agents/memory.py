@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 import json
 
@@ -14,7 +14,7 @@ def make_trace_event(
     metadata: dict | None = None,
 ) -> dict:
     return {
-        "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
+        "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"),
         "agent_name": agent_name,
         "action": action,
         "input_summary": input_summary,

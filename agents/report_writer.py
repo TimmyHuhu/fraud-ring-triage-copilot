@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import html
 import json
 
@@ -19,7 +19,7 @@ def build_case_report(case: dict) -> str:
 ## Case Overview
 
 - **Case ID:** {case.get("case_id", "N/A")}
-- **Generated At:** {datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")}
+- **Generated At:** {datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")}
 - **Risk Score:** {case.get("risk_score", "N/A")}
 - **Risk Tier:** {case.get("risk_tier", "N/A")}
 - **Priority:** {case.get("priority", "N/A")}
@@ -154,7 +154,7 @@ def build_case_report_html(case: dict) -> str:
     <h2>Case Overview</h2>
     <div class="summary-grid">
       <div class="card"><strong>Case ID:</strong> {html.escape(case.get("case_id", "N/A"))}</div>
-      <div class="card"><strong>Generated At:</strong> {datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")}</div>
+      <div class="card"><strong>Generated At:</strong> {datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")}</div>
       <div class="card"><strong>Risk Score:</strong> {html.escape(str(case.get("risk_score", "N/A")))}</div>
       <div class="card"><strong>Risk Tier:</strong> <span class="badge">{html.escape(case.get("risk_tier", "N/A"))}</span></div>
       <div class="card"><strong>Priority:</strong> {html.escape(case.get("priority", "N/A"))}</div>

@@ -1,3 +1,20 @@
+import hashlib
+
+
+def make_case_id(finding: dict) -> str:
+    """Build a stable case ID from a finding.
+
+    A case is identified by its pattern type and the set of accounts involved,
+    so the same ring always maps to the same case ID across runs. We hash that
+    canonical identity rather than the whole finding (whose amounts/evidence may
+    vary) and avoid the built-in hash(), which is randomized per process.
+    """
+    accounts = sorted(str(a) for a in finding.get("accounts", []))
+    identity = f"{finding.get('pattern', '')}|{'|'.join(accounts)}"
+    digest = hashlib.sha1(identity.encode("utf-8")).hexdigest()
+    return f"CASE-{int(digest, 16) % 100000:05d}"
+
+
 def score_finding(finding: dict) -> dict:
     pattern = finding.get("pattern", "")
     score = 0
@@ -59,7 +76,7 @@ def score_finding(finding: dict) -> dict:
         tier = "Low"
 
     return {
-        "case_id": f"CASE-{abs(hash(str(finding))) % 100000:05d}",
+        "case_id": make_case_id(finding),
         "risk_score": score,
         "risk_tier": tier,
         "pattern": pattern,
