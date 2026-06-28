@@ -2,6 +2,10 @@
 
 Track 02 — Fraud Watch
 
+![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)
+![Streamlit](https://img.shields.io/badge/Built%20with-Streamlit-FF4B4B.svg)
+
 Fraud Ring Triage Copilot is a multi-agent investigation dashboard that helps fraud analysts detect hidden fraud rings, rank suspicious cases, recommend next actions, and generate downloadable case reports.
 
 ## Problem
@@ -18,6 +22,17 @@ The system runs a four-agent workflow:
 2. Risk Ranker assigns each finding a risk score and risk tier.
 3. Action Recommender recommends escalation, manual review, watchlist, or dismissal.
 4. Analyst Report Writer generates a downloadable fraud case report.
+
+## Screenshots
+
+> Add screenshots or a short GIF of the dashboard here to show the workflow at a
+> glance. Suggested shots: the upload + metrics view, the ranked cases table, and
+> a generated case report.
+>
+> ```markdown
+> ![Dashboard overview](docs/screenshot-dashboard.png)
+> ![Ranked cases](docs/screenshot-cases.png)
+> ```
 
 ## Cognee-Ready Shared Memory
 
@@ -53,31 +68,44 @@ product_brief.pdf
 
 ## Run Locally
 
-Install dependencies:
+Requires Python 3.10 or newer.
 
-~~~bash
+Create and activate a virtual environment, then install dependencies:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate        # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-~~~
+```
+
+(Optional) Configure environment variables for the planned Cognee integration.
+The app runs fully offline on the sample data without this step:
+
+```bash
+cp .env.example .env             # then edit .env with your own values
+```
 
 Run the app:
 
-~~~bash
+```bash
 python -m streamlit run app.py
-~~~
+```
 
 Then upload the sample dataset:
 
-~~~text
+```text
 data/sample_transactions.csv
-~~~
+```
 
 ## Project Structure
 
-~~~text
+```text
 fraud-ring-triage-copilot/
 ├── app.py
 ├── requirements.txt
 ├── README.md
+├── LICENSE
+├── .env.example
 ├── product_brief.pdf
 ├── data/
 │   └── sample_transactions.csv
@@ -89,7 +117,7 @@ fraud-ring-triage-copilot/
 │   ├── report_writer.py
 │   └── memory.py
 └── reports/
-~~~
+```
 
 ## Demo Flow
 
@@ -103,3 +131,7 @@ fraud-ring-triage-copilot/
 ## Status
 
 MVP complete. Future improvements include direct Cognee integration, richer graph visualization, larger Kaggle dataset support, and automated case clustering.
+
+## License
+
+Released under the [MIT License](LICENSE). Copyright (c) 2026 Timmy Hu.
